@@ -25,6 +25,7 @@ class LPRDataLoader(Dataset):
             print(f"Listing files in directory: {img_dir[i]}")
             print(os.listdir(img_dir[i]))
             self.img_paths += [el for el in paths.list_images(img_dir[i])]
+            print("\nTrain Accuracy\n")
         random.shuffle(self.img_paths)
         self.img_size = imgSize
         self.lpr_max_len = lpr_max_len
@@ -57,13 +58,31 @@ class LPRDataLoader(Dataset):
             label.extend([CHARS_DICT['-']] * (self.lpr_max_len - len(label)))  # Padding with '-' (or any other pad character)
         elif len(label) > self.lpr_max_len:
             label = label[:self.lpr_max_len]     
-        label_string = ''.join([CHARS[i] for i in label])    
-        print(f"Image name: {imgname}, Label: {label}, Num Plate: {label_string}")    
-
         if len(label) == 7:
             if self.check(label) == False:
                 print(imgname)
                 assert 0, "Error label ^~^!!!"
+        label_string = ''.join([CHARS[i] for i in label]) 
+        label_string = label_string.rstrip("-")   
+        print(f"Image name: {imgname}, Label: {label}, Num Plate: {label_string}")
+        Tp=0
+        Tn=0
+        #Tn_2=0
+        if len(imgname)==len(label_string) and imgname==label_string:
+          Tp+=1
+        else:
+          Tn+=1
+        Acc=Tp/(Tp+Tn)*100
+        print("Accuracy[Tp:Tn]: {} [{}:{}]".format(Acc,Tp,Tn))
+        #if len(imgname)!=len(label_string):
+          #Tn_1=+1
+          #continue
+        #if imgname==label_string:
+          #Tp=+1
+        #else: 
+          #Tn_2=+1
+        #Acc = Tp * 1.0 / (Tp + Tn_1 + Tn_2)
+        #print("[Info] Test Accuracy: {} [{}:{}:{}:{}]".format(Acc, Tp, Tn_1, Tn_2, (Tp+Tn_1+Tn_2)))
 
         return Image, label, len(label)
 
