@@ -204,7 +204,7 @@ def train():
                   + '|| Totel iter ' + repr(iteration) + ' || Loss: %.4f||' % (loss.item()) +
                   'Batch time: %.4f sec. ||' % (end_time - start_time) + 'LR: %.8f' % (lr))
     # final test
-    print("Final test Accuracy:")
+    print("\nFinal test Accuracy:\n")
     Greedy_Decode_Eval(lprnet, test_dataset, args)
 
     # save final parameters
@@ -244,30 +244,33 @@ def Greedy_Decode_Eval(Net, datasets, args):
             preb = prebs[i, :, :]
             preb_label = list()
             for j in range(preb.shape[1]):
-                preb_label.append(np.argmax(preb[:, j], axis=0))
-            no_repeat_blank_label = list()
-            pre_c = preb_label[0]
-            if pre_c != len(CHARS) - 1:
+              preb_label.append(np.argmax(preb[:, j], axis=0))
+              no_repeat_blank_label = list()
+              pre_c = preb_label[0]
+              if pre_c != len(CHARS) - 1:
                 no_repeat_blank_label.append(pre_c)
-            for c in preb_label: # dropout repeate label and blank label
-                if (pre_c == c) or (c == len(CHARS) - 1):
+                for c in preb_label: # dropout repeate label and blank label
+                  if (pre_c == c) or (c == len(CHARS) - 1):
                     if c == len(CHARS) - 1:
-                        pre_c = c
-                    continue
-                no_repeat_blank_label.append(c)
-                pre_c = c
-            preb_labels.append(no_repeat_blank_label)
+                      pre_c = c
+                      #continue
+                      no_repeat_blank_label.append(c)
+                      pre_c = c
+                      preb_labels.append(no_repeat_blank_label)
+                      
+
         for i, label in enumerate(preb_labels):
-            if len(label) != len(targets[i]):
+          
+          if len(label) != len(targets[i]) and len(targets[i])>9:
                 Tn_1 += 1
                 continue
-            if (np.asarray(targets[i]) == np.asarray(label)).all():
+          if (np.asarray(targets[i]) == np.asarray(label)).all():
                 Tp += 1
-            else:
+          else:
                 Tn_2 += 1
 
-    Acc = Tp * 1.0 / (Tp + Tn_1 + Tn_2)
-    print("[Info] Test Accuracy: {} [{}:{}:{}:{}]".format(Acc, Tp, Tn_1, Tn_2, (Tp+Tn_1+Tn_2)))
+    #Acc = Tp * 1.0 / (Tp + Tn_1 + Tn_2)
+    #print("[Info] Test Accuracy: {} [{}:{}:{}:{}]".format(Acc, Tp, Tn_1, Tn_2, (Tp+Tn_1+Tn_2)))
     t2 = time.time()
     print("[Info] Test Speed: {}s 1/{}]".format((t2 - t1) / len(datasets), len(datasets)))
 
